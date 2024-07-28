@@ -1,0 +1,55 @@
+formatVersion: 1
+inputs: {}
+resources:
+  Overlay-VM-group:
+    type: Cloud.SecurityGroup
+    properties:
+      securityGroupType: new
+      rules:
+        - name: IN-ICMP
+          source: any
+          direction: inbound
+          access: Allow
+  Web-VM-Group:
+    type: Cloud.SecurityGroup
+    properties:
+      securityGroupType: new
+      rules:
+        - name: IN-ICMP
+          source: any
+          direction: inbound
+          access: Deny
+  Overlay-VM:
+    type: Cloud.vSphere.Machine
+    properties:
+      name: Overlay_node
+      image: Gold-Image
+      flavor: Gold-Flavor
+      networks:
+        - network: ${resource["NSX-Overlay-Profile"].id}
+          securityGroups:
+            - ${resource["Overlay-VM-group"].id}
+          assignment: dynamic
+  WEB-VM:
+    type: Cloud.vSphere.Machine
+    properties:
+      name: Web_node
+      image: Gold-Image
+      flavor: Gold-Flavor
+      networks:
+        - network: ${resource["Web-Segment-Profile"].id}
+          securityGroups:
+            - ${resource["Web-VM-Group"].id}
+          assignment: dynamic
+  NSX-Overlay-Profile:
+    type: Cloud.NSX.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: Overlay-Segment
+  Web-Segment-Profile:
+    type: Cloud.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: WEb-Segment
