@@ -1,0 +1,49 @@
+formatVersion: 1
+inputs: {}
+resources:
+  Overlay-VM-group:
+    type: Cloud.SecurityGroup
+    properties:
+      securityGroupType: existing
+      constraints:
+        - tag: Overlay-VM-Tag
+  Web-VM-Group:
+    type: Cloud.SecurityGroup
+    properties:
+      securityGroupType: existing
+      constraints:
+        - tag: Web-VM-Tag
+  Overlay-VM:
+    type: Cloud.vSphere.Machine
+    properties:
+      name: Overlay_node-03
+      image: Gold-Image
+      flavor: Gold-Flavor
+      networks:
+        - network: ${resource["NSX-Overlay-Profile"].id}
+          securityGroups:
+            - ${resource["Overlay-VM-group"].id}
+          assignment: dynamic
+  WEB-VM:
+    type: Cloud.vSphere.Machine
+    properties:
+      name: Web_node-03
+      image: Gold-Image
+      flavor: Gold-Flavor
+      networks:
+        - network: ${resource["Web-Segment-Profile"].id}
+          securityGroups:
+            - ${resource["Web-VM-Group"].id}
+          assignment: dynamic
+  NSX-Overlay-Profile:
+    type: Cloud.NSX.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: Overlay-Segment
+  Web-Segment-Profile:
+    type: Cloud.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: Web-Segment
